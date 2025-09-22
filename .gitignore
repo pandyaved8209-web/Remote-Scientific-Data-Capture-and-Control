@@ -1,0 +1,5 @@
+node_modules/
+.env
+streams/
+captures/
+public/videos/
