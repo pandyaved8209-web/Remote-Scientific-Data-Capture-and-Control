@@ -113,7 +113,7 @@
 
           <div className="grid">
             <div className="panel">
-              <h3> Object Selection</h3>
+              <h3> <img className="icon" src="./object-selection.png" alt="" />Object Selection</h3>
               <input className="input" placeholder="Search (e.g., M31, Nebula, Cluster)" value={query} onChange={async e=>{setQuery(e.target.value); setObjects(await api.catalog(e.target.value));}}/>
               <div style={{marginTop:8, color:"var(--muted)", fontSize:13}}>Visible now (alt ≥ 15°):</div>
               {visible.slice(0,4).map(o=>(
@@ -131,7 +131,7 @@
             </div>
 
             <div className="panel">
-              <h3>🌤️ Weather Conditions</h3>
+              <h3> <img className="icon" src="./weather-conditions.png" alt="" />Weather Conditions</h3>
               <div className="metrics">
                 <Metric label="Temperature" value={fmt(weather?.temperature,"°C")} />
                 <Metric label="Humidity" value={fmt(weather?.humidity,"%")} />
@@ -160,7 +160,7 @@
 
           <div className="status-grid">
             <div className="panel">
-              <h3>🛰️ Telescope Status</h3>
+              <h3> <img className="icon" src="./telescope-status.png" alt="" />Telescope Status</h3>
               <div className="kv">
                 <Pair k="Azimuth"  v={scope ? `${(scope.az?.toFixed?.(1) ?? scope.az) ?? "—"}°` : <Sk/>}/>
                 <Pair k="Elevation" v={scope ? `${(scope.el?.toFixed?.(1) ?? scope.el) ?? "—"}°` : <Sk/>}/>
@@ -175,7 +175,7 @@
 
             <div className="panel">
               <div style={{display:"flex", alignItems:"center", justifyContent:"space-between"}}>
-                <h3>🔭 Live Telescope Feed</h3>
+                <h3> <img className="icon" src="./live-telescope.png" alt="" />Live Telescope Feed</h3>
                 <div className="pill">
                   <span className="dot" style={{background: scope?.trackingActive ? "var(--ok)" : "var(--warn)"}}></span>
                   {scope?.trackingActive ? "Tracking Active" : "Tracking Paused"}
