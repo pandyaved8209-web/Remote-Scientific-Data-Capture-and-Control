@@ -10,6 +10,7 @@ body{
   background: radial-gradient(1200px 600px at 50% -10%, #182235 0%, var(--bg) 60%);
   color:var(--text);
 }
+.brand-logo {width: 70px;   height: auto;     margin-right: 10px; vertical-align: middle;}
 .container{max-width:1200px; margin:32px auto; padding:0 16px}
 .header{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; align-items:center}
 .brand{font-weight:800; font-size:28px}
