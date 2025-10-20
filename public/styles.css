@@ -609,10 +609,90 @@ body[data-theme="light"]::after {
 @keyframes light-stars-drift-2 { from { background-position: 0 0; } to { background-position: -2000px 900px; } }
 @keyframes light-stars-twinkle { 0%, 100% { opacity: 0.26; } 50% { opacity: 0.55; } }
 
+
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   body[data-theme="light"]::before,
   body[data-theme="light"]::after {
     animation: none;
   }
+}
+
+
+/* ==========================================================================
+   NovaScope Footer 
+
+ 
+.site-footer,
+.footer.cosmic-footer {
+  position: fixed;
+  bottom: 20px;
+  left: 30px;
+  right: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-family: "Inter", system-ui, sans-serif;
+  color: var(--muted);
+  background: transparent;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.site-footer .footer-left,
+.site-footer .footer-right,
+.footer.cosmic-footer .left,
+.footer.cosmic-footer .right {
+  pointer-events: auto;
+  line-height: 1.3;
+  margin: 0;          /* keep paragraphs tidy if you use <p> */
+
+
+.site-footer .footer-left,
+.footer.cosmic-footer .left {
+  color: var(--text);
+  font-style: italic;
+  text-shadow: 0 0 6px rgba(7, 17, 30, 0.4);
+  text-align: left;
+}
+
+.site-footer .footer-right,
+.footer.cosmic-footer .right {
+  color: var(--text);
+  font-weight: 400;
+  text-align: right;
+}
+
+/* Light mode tweaks */
+body[data-theme="light"] .site-footer .footer-left,
+body[data-theme="light"] .footer.cosmic-footer .left {
+  color: #0e1a2b;
+  text-shadow: none;
+}
+
+body[data-theme="light"] .site-footer .footer-right,
+body[data-theme="light"] .footer.cosmic-footer .right {
+  color: #0e1a2b;
+}
+
+
+html, body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  flex: 1; /* take up all available space above the footer */
+}
+
+footer,
+.site-footer,
+.footer.cosmic-footer {
+  position: relative; /* stop being 'fixed' */
+  margin-top: auto;   /* push it to bottom of the viewport */
+  padding: 10px 30px;
 }
