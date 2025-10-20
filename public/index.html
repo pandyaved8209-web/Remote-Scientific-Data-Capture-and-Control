@@ -74,7 +74,7 @@
           downloadBlob(blob, `telescope_${ts}.json`); toast("Saved PNG + JSON");
         } catch { toast("Capture failed"); } finally { setBusy(false); }
       };
-      return <div className="controls"><button className="btn primary" onClick={capture} disabled={busy}>{busy? "Capturing…" : "📸 Capture (PNG + JSON)"}</button></div>;
+      return <div className="controls"><button className="btn primary" onClick={capture} disabled={busy}>{busy? "Capturing…" : "📸 Take Snapshot"}</button></div>;
     }
 
     function App(){
@@ -224,4 +224,5 @@
   </script>
 </body>
 </html>
+
 
