@@ -1,7 +1,4 @@
-
-
-/* 🌌 NovaScope – Space Theme Update */
-:root{
+:root {
   /* Deep-space palette */
   --bg: #050810;
   --panel: #0d1422;
@@ -15,36 +12,43 @@
   --line: #1d2a40;
 }
 
-/* Global Reset */
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family:"Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-  color:var(--text);
+
+/* ==========================================================================
+   2) Global / Base
+   ========================================================================== */
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  color: var(--text);
   background:
     radial-gradient(1000px 600px at 50% -15%, #142038 0%, #050810 70%),
     var(--bg);
   background-attachment: fixed;
   letter-spacing: 0.15px;
+  position: relative;       /* so pseudo-elements sit behind the page */
+  overflow-x: hidden;       /* avoid scrollbars during pan */
 }
 
-/* ===== Starfield background (two layers + slow parallax) ===== */
-body {
-  position: relative;      /* so pseudo-elements sit behind the page */
-  overflow-x: hidden;      /* avoid scrollbars during pan */
-}
+
+/* ==========================================================================
+   3) Starfield (Dark Mode) – two layers + slow parallax
+   ========================================================================== */
 
 /* FAR stars (larger tile, softer, slower) */
-body::before{
-  content:"";
-  position: fixed; inset: 0;
-  z-index: -2;              /* behind everything */
+body:not([data-theme="light"])::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;               /* behind everything */
   pointer-events: none;
   opacity: .45;
   background-repeat: repeat;
   background-size: 512px 512px;
-  /* blue-white sparse stars as an inline SVG tile */
   background-image: url("data:image/svg+xml;utf8,\
   <svg xmlns='http://www.w3.org/2000/svg' width='512' height='512'>\
     <rect width='512' height='512' fill='none'/>\
@@ -74,9 +78,10 @@ body::before{
 }
 
 /* NEAR stars (smaller tile, brighter, tiny twinkle) */
-body::after{
-  content:"";
-  position: fixed; inset: 0;
+body:not([data-theme="light"])::after {
+  content: "";
+  position: fixed;
+  inset: 0;
   z-index: -1;
   pointer-events: none;
   opacity: .75;
@@ -98,62 +103,101 @@ body::after{
 }
 
 /* Parallax drift + twinkle */
-@keyframes star-pan-1 { from{background-position:0 0} to{background-position:-1500px 700px} }
-@keyframes star-pan-2 { from{background-position:0 0} to{background-position:-2000px 1100px} }
-@keyframes twinkle      { 0%,100%{opacity:.65} 50%{opacity:.85} }
+@keyframes star-pan-1 { from { background-position: 0 0; } to { background-position: -1500px 700px; } }
+@keyframes star-pan-2 { from { background-position: 0 0; } to { background-position: -2000px 1100px; } }
+@keyframes twinkle    { 0%, 100% { opacity: .65; } 50% { opacity: .85; } }
 
-/* Respect users who prefer less motion */
-@media (prefers-reduced-motion: reduce){
-  body::before, body::after { animation: none; }
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after { animation: none; }
 }
 
 
-/* Logo & Header */
-.brand-logo{
-  width:70px; height:auto; margin-right:10px; vertical-align:middle;
+/* ==========================================================================
+   4) Layout
+   ========================================================================== */
+
+.container { max-width: 1200px; margin: 32px auto; padding: 0 16px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 1fr;
+  gap: 16px;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: 0.8fr 2fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: 1fr; }
+  .status-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ==========================================================================
+   5) Components
+   ========================================================================== */
+
+/* ----- Header / Brand / Badges ----- */
+
+.brand-logo {
+  width: 70px;
+  height: auto;
+  margin-right: 10px;
+  vertical-align: middle;
   filter: drop-shadow(0 0 8px rgba(92,168,255,0.4));
 }
-.header{
-  display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px; align-items:center;
+
+.header {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  align-items: center;
 }
-.brand{
-  font-weight:800;
-  font-size:28px;
-  color:var(--accent-glow);
-  text-shadow:0 0 10px rgba(92,168,255,0.4);
+
+.brand {
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--accent-glow);
+  text-shadow: 0 0 10px rgba(92,168,255,0.4);
 }
 
-
-.badge{
-  display:inline-flex; gap:8px; padding:6px 10px;
-  border-radius:999px;
-  background:rgba(92,168,255,0.08);
-  color:var(--muted);
-  font-size:13px;
-  border:1px solid rgba(92,168,255,0.15);
+.badge {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(92,168,255,0.08);
+  color: var(--muted);
+  font-size: 13px;
+  border: 1px solid rgba(92,168,255,0.15);
 }
-.badge .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
 
-/* Layout Grids */
-.container{max-width:1200px; margin:32px auto; padding:0 16px}
-.grid{display:grid; grid-template-columns:1.1fr 1.1fr 1fr; gap:16px}
-.status-grid{display:grid; grid-template-columns:0.8fr 2fr; gap:16px; margin-top:16px}
-@media (max-width:1024px){.grid{grid-template-columns:1fr}.status-grid{grid-template-columns:1fr}}
+.badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
 
-/* Panels */
-.panel{
+
+/* ----- Panels & Headings ----- */
+
+.panel {
   background:
     linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03)),
     linear-gradient(180deg, var(--panel), var(--panel-2));
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,.45);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
 }
+
 .panel h3 {
   display: flex;
   align-items: center;
-  gap: 12px;               /* wider spacing for bigger icon */
+  gap: 12px;        /* spacing for bigger icon */
   margin: 0 0 14px 0;
   font-size: 18px;
   color: var(--accent-glow);
@@ -161,9 +205,11 @@ body::after{
   text-shadow: 0 0 8px rgba(124,178,255,0.4);
 }
 
-/* Icons */
+
+/* ----- Icons ----- */
+
 .icon {
-  width: 40px;              /* slightly bigger */
+  width: 40px;
   height: 40px;
   object-fit: contain;
   display: inline-block;
@@ -175,7 +221,6 @@ body::after{
   opacity: 0.95;
 }
 
-/* subtle hover animation glow */
 .icon:hover {
   transform: scale(1.12);
   filter:
@@ -184,146 +229,390 @@ body::after{
   opacity: 1;
 }
 
-/* Inputs */
-.input{
-  width:100%;
-  padding:10px 12px;
-  border-radius:10px;
-  border:1px solid #24324d;
-  background:#0d182c;
-  color:var(--text);
-  outline:none;
-}
-.input:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 6px rgba(92,168,255,0.3);
+
+/* ----- Inputs ----- */
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #24324d;
+  background: #0d182c;
+  color: var(--text);
+  outline: none;
 }
 
-/* Object Cards */
-.object-card{
-  margin-top:10px;
-  padding:12px;
-  border-radius:12px;
-  background:rgba(92,168,255,0.05);
-  border:1px solid #204a6a;
-  cursor:pointer;
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 6px rgba(92,168,255,0.3);
+}
+
+
+/* ----- Object Cards ----- */
+
+.object-card {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(92,168,255,0.05);
+  border: 1px solid #204a6a;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
-.object-card:hover{
-  border-color:var(--accent);
-  background:rgba(92,168,255,0.12);
-  box-shadow:0 0 12px rgba(92,168,255,0.25);
+
+.object-card:hover {
+  border-color: var(--accent);
+  background: rgba(92,168,255,0.12);
+  box-shadow: 0 0 12px rgba(92,168,255,0.25);
 }
 
-/* Metrics */
-.metrics{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:8px}
-.metric{
-  background:#0e1524;
-  border:1px solid #24324d;
-  border-radius:10px;
-  padding:12px;
-  text-align:center;
+
+/* ----- Metrics & Forecast ----- */
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.metric {
+  background: #0e1524;
+  border: 1px solid #24324d;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
   box-shadow: inset 0 0 8px rgba(92,168,255,0.08);
 }
-.metric .big{font-size:22px; font-weight:700; color:var(--accent-glow)}
-.metric .label{color:var(--muted); font-size:12px}
-.forecast{
-  margin-top:12px;
-  border-top:1px dashed #24324d;
-  padding-top:12px;
-  color:var(--muted);
-  font-size:14px;
+
+.metric .big { font-size: 22px; font-weight: 700; color: var(--accent-glow); }
+.metric .label { color: var(--muted); font-size: 12px; }
+
+.forecast {
+  margin-top: 12px;
+  border-top: 1px dashed #24324d;
+  padding-top: 12px;
+  color: var(--muted);
+  font-size: 14px;
 }
 
-/* Telescope Status */
-.kv{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:10px}
-.pair{
-  background:#0d182c;
-  border:1px solid #24324d;
-  border-radius:10px;
-  padding:10px;
-}
-.k{color:var(--muted); font-size:12px}
-.v{font-weight:700}
 
-/* Video Panels */
-.camera{
-  height:210px;
-  border-radius:10px;
-  background:#000;
-  border:1px solid #2b395a;
-  width:100%;
-  box-shadow:0 0 10px rgba(92,168,255,0.15);
-}
-.feed{
-  border-radius:10px;
-  background:#000;
-  border:1px solid #1b273d;
-  position:relative;
-  box-shadow:0 0 10px rgba(0,0,0,0.6);
+/* ----- Telescope Status (KV) ----- */
+
+.kv {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
 }
 
-/* Pills */
-.pill{
- display: inline-flex;
+.pair {
+  background: #0d182c;
+  border: 1px solid #24324d;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.k { color: var(--muted); font-size: 12px; }
+.v { font-weight: 700; }
+
+
+/* ----- Video Panels ----- */
+
+.camera {
+  height: 210px;
+  border-radius: 10px;
+  background: #000;
+  border: 1px solid #2b395a;
+  width: 100%;
+  box-shadow: 0 0 10px rgba(92,168,255,0.15);
+}
+
+.feed {
+  border-radius: 10px;
+  background: #000;
+  border: 1px solid #1b273d;
+  position: relative;
+  box-shadow: 0 0 10px rgba(0,0,0,0.6);
+}
+
+
+/* ----- Pills / Status Dots ----- */
+
+.pill {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  line-height: 1;           /* remove extra vertical space from the font */
-  padding: 6px 10px;        /* keep your padding */
+  line-height: 1;    /* remove extra vertical space from the font */
+  padding: 6px 10px;
 }
 
 .badge .dot,
-.pill .dot{
-  width: 10px;              /* a touch bigger reads better at small sizes */
+.pill .dot {
+  width: 10px;       /* reads better at small sizes */
   height: 10px;
   border-radius: 50%;
-  flex: 0 0 auto;           /* don’t let it stretch */
-  align-self: center;       /* explicit vertical centering inside the flex row */
+  flex: 0 0 auto;    /* don’t let it stretch */
+  align-self: center;
 }
 
-/* Buttons */
-.controls{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
-.select,.btn{
-  background:#0d182c;
-  border:1px solid #24324d;
-  color:var(--text);
-  border-radius:10px;
-  padding:8px 10px;
-  cursor:pointer;
-}
-.btn.primary{
-  background:linear-gradient(180deg,#1a4d8c,#0e3264);
-  border-color:#2a4f7d;
-  color:#fff;
-  box-shadow:0 0 12px rgba(92,168,255,0.25);
-}
-.btn.primary:hover{
-  background:linear-gradient(180deg,#2260b1,#0e3264);
-  box-shadow:0 0 16px rgba(92,168,255,0.35);
+
+/* ----- Controls & Buttons ----- */
+
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
 }
 
-/* Skeleton & Toast */
-.skeleton{
-  background:linear-gradient(90deg,#0e1524,#182033,#0e1524);
-  background-size:200% 100%;
-  animation:shimmer 1.4s infinite;
-  border-radius:8px;
-  height:20px;
+.select,
+.btn {
+  background: #0d182c;
+  border: 1px solid #24324d;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
 }
-@keyframes shimmer{
-  0%{background-position:200% 0}
-  100%{background-position:-200% 0}
+
+.btn.primary {
+  background: linear-gradient(180deg, #1a4d8c, #0e3264);
+  border-color: #2a4f7d;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(92,168,255,0.25);
 }
-.toast{
-  position:fixed; bottom:20px; left:50%;
-  transform:translateX(-50%);
-  background:#10182a;
-  border:1px solid #2c3f61;
-  color:#e6f0ff;
-  padding:12px 14px;
-  border-radius:10px;
-  box-shadow:0 10px 30px rgba(0,0,0,.45);
-  font-size:14px;
-  display:none;
+
+.btn.primary:hover {
+  background: linear-gradient(180deg, #2260b1, #0e3264);
+  box-shadow: 0 0 16px rgba(92,168,255,0.35);
 }
-.toast.show{display:block}
+
+
+/* ----- Skeleton & Toast ----- */
+
+.skeleton {
+  background: linear-gradient(90deg, #0e1524, #182033, #0e1524);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+  height: 20px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10182a;
+  border: 1px solid #2c3f61;
+  color: #e6f0ff;
+  padding: 12px 14px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  font-size: 14px;
+  display: none;
+}
+
+.toast.show { display: block; }
+
+
+
+/* ==========================================================================
+   6) Light Theme Overrides
+   ========================================================================== */
+
+/* ----- Vars & Background ----- */
+
+body[data-theme="light"] {
+  --bg: #f6f8fc;
+  --panel: #ffffff;
+  --panel-2: #f3f6fb;
+  --text: #0e1a2b;
+  --muted: #4a5a77;
+  --accent: #2f6dff;
+  --accent-glow: #2f6dff;
+  --ok: #2fbf86;
+  --warn: #c27b19;
+  --line: #dbe4f2;
+}
+
+body[data-theme="light"] {
+  background:
+    radial-gradient(1000px 600px at 50% -15%, #e9eef9 0%, #f6f8fc 70%),
+    #f6f8fc;
+}
+
+/* Toggle button */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  font: 600 13px/1 Inter, system-ui, sans-serif;
+}
+
+.theme-toggle:hover { box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+
+
+/* ----- Component Surfaces & Contrast ----- */
+
+/* Inputs, selects and neutral buttons */
+body[data-theme="light"] .input,
+body[data-theme="light"] .select,
+body[data-theme="light"] .btn {
+  background: #f7faff;
+  border: 1px solid #d6e2f3;
+  color: var(--text);
+}
+
+/* Primary action button */
+body[data-theme="light"] .btn.primary {
+  background: linear-gradient(180deg, #5d8bff, #2f6dff);
+  border-color: #2f6dff;
+  color: #fff;
+  box-shadow: 0 0 0 0 rgba(0,0,0,0);
+}
+
+body[data-theme="light"] .btn.primary:hover {
+  background: linear-gradient(180deg, #6b95ff, #2c64ea);
+}
+
+/* Metric tiles & key/value pairs */
+body[data-theme="light"] .metric,
+body[data-theme="light"] .pair {
+  background: #f4f7ff;
+  border: 1px solid #dbe6f8;
+  box-shadow: inset 0 0 0 rgba(0,0,0,0);
+}
+
+body[data-theme="light"] .metric .big { color: var(--accent); }
+body[data-theme="light"] .k { color: #5c6c87; }
+body[data-theme="light"] .v { color: var(--text); }
+
+/* Object list cards */
+body[data-theme="light"] .object-card {
+  background: #f6f9ff;
+  border: 1px solid #d6e2f3;
+  color: var(--text);
+}
+
+body[data-theme="light"] .object-card:hover {
+  background: #eef4ff;
+  border-color: var(--accent);
+}
+
+/* Badges (status pills in the header) */
+body[data-theme="light"] .badge {
+  background: #eaf1ff;
+  border: 1px solid #d6e2f3;
+  color: #51627d;
+}
+
+body[data-theme="light"] .pill {
+  background: #eef3ff;
+  border: 1px solid #d6e2f3;
+  color: #51627d;
+}
+
+/* Inputs in the control rows under the video */
+body[data-theme="light"] .controls .select,
+body[data-theme="light"] .controls .input {
+  background: #f7faff;
+  border: 1px solid #d6e2f3;
+  color: var(--text);
+}
+
+/* Forecast divider + muted text readability */
+body[data-theme="light"] .forecast {
+  color: #5e6f8b;
+  border-top: 1px dashed #d6e2f3;
+}
+
+/* Panel headings */
+body[data-theme="light"] .panel h3 {
+  color: var(--accent);
+  text-shadow: none;
+}
+
+/* Keep video panels dark, soften borders */
+body[data-theme="light"] .camera { border: 1px solid #cfd9ea; }
+body[data-theme="light"] .feed   { border: 1px solid #cfd9ea; box-shadow: none; }
+
+
+/* ----- Light Sky (Starfield) ----- */
+
+body[data-theme="light"] {
+  position: relative;
+  background:
+    radial-gradient(1000px 600px at 50% -15%, #f7faff 0%, #e9eef9 70%),
+    #f6f8fc;
+  overflow-x: hidden;
+}
+
+/* Layer 1 */
+body[data-theme="light"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  opacity: 0.40;
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  background-image: url("data:image/svg+xml;utf8,\
+  <svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'>\
+    <g fill='%23bcd3ff'>\
+      <circle cx='20' cy='22' r='1.2'/>\
+      <circle cx='80' cy='90' r='1.1'/>\
+      <circle cx='200' cy='60' r='1.2'/>\
+      <circle cx='140' cy='160' r='1.3'/>\
+      <circle cx='220' cy='220' r='1.4'/>\
+      <circle cx='60' cy='190' r='1.0'/>\
+    </g>\
+  </svg>");
+  animation: light-stars-drift 160s linear infinite;
+}
+
+/* Layer 2 + twinkle */
+body[data-theme="light"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.38;
+  background-repeat: repeat;
+  background-size: 600px 600px;
+  background-image: url("data:image/svg+xml;utf8,\
+  <svg xmlns='http://www.w3.org/2000/svg' width='192' height='192'>\
+    <g fill='%23a6c5ff'>\
+      <circle cx='40' cy='30' r='1.1'/>\
+      <circle cx='130' cy='80' r='1.2'/>\
+      <circle cx='100' cy='160' r='1.25'/>\
+      <circle cx='170' cy='120' r='1.1'/>\
+    </g>\
+  </svg>");
+  animation: light-stars-drift-2 200s linear infinite reverse,
+             light-stars-twinkle 5.5s ease-in-out infinite;
+}
+
+@keyframes light-stars-drift   { from { background-position: 0 0; } to { background-position: -1500px 700px; } }
+@keyframes light-stars-drift-2 { from { background-position: 0 0; } to { background-position: -2000px 900px; } }
+@keyframes light-stars-twinkle { 0%, 100% { opacity: 0.26; } 50% { opacity: 0.55; } }
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  body[data-theme="light"]::before,
+  body[data-theme="light"]::after {
+    animation: none;
+  }
+}
