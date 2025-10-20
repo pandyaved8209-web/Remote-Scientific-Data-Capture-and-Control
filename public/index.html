@@ -1,14 +1,5 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Remote Astronomy Portal</title>
-  <link rel="stylesheet" href="./styles.css"/>
-
-  <!-- CDN scripts (production builds) -->
-  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script><!doctype html>
-<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -25,7 +16,7 @@
   </head>
 
   <!-- NOTE: Keeping this structure and the early theme script as-is to avoid behavior changes -->
-  <body>
+ 
     <body data-theme="dark">
       <!-- Set the saved theme early (before React loads) -->
       <script>
@@ -620,226 +611,13 @@
         ReactDOM.createRoot(document.getElementById("root")).render(<App />);
       </script>
       <!-- ====================== /APP SCRIPT ====================== -->
+
+       <footer class="site-footer">
+  <div class="footer-left">🪐 “Exploring the skies, one pixel at a time.”</div>
+  <div class="footer-right">© 2025 NovaScope — TeamNova</div>
+</footer>
+
+
     </body>
   </body>
 </html>
-
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-</head>
-<body>
-  <div id="root"></div>
-  <div id="toast" class="toast"></div>
-
-  <script type="text/babel">
-    const { useEffect, useState, useRef } = React;
-
-    const api = {
-      weather: () => fetch("/api/weather").then(r=>r.json()),
-      catalog: (q="") => fetch("/api/objects"+(q?`?q=${encodeURIComponent(q)}`:"")).then(r=>r.json()),
-      visible: (lat, lon, iso, minAlt=15) => fetch(`/api/objects/visible?lat=${lat}&lon=${lon}&time=${encodeURIComponent(iso)}&minAlt=${minAlt}`).then(r=>r.json()),
-      scope: () => fetch("/api/telescope/status").then(r=>r.json()),
-      config: (payload) => fetch("/api/telescope/config",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json()),
-      target: (id) => fetch("/api/telescope/target",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}).then(r=>r.json())
-    };
-
-    const fmt = (n,s="") => (n==null||!Number.isFinite(Number(n)))? "—" : `${Number(n).toFixed(0)}${s}`;
-    function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 2300); }
-    function useInterval(cb, ms){ useEffect(()=>{ const id=setInterval(cb, ms); return ()=>clearInterval(id); }, [cb, ms]); }
-
-    function HlsPlayer({ src, className="camera", autoPlay=true, muted=true, controls=true, role }) {
-      const ref = useRef(null);
-      useEffect(()=>{
-        const video = ref.current;
-        if (!video || !src) return;
-        if (video.canPlayType("application/vnd.apple.mpegURL")) {
-          video.src = src; // Safari
-        } else if (window.Hls?.isSupported()) {
-          const hls = new Hls({ enableWorker:true, lowLatencyMode:true });
-          hls.loadSource(src);
-          hls.attachMedia(video);
-          return ()=>hls.destroy();
-        } else {
-          video.src = src.replace(".m3u8",".mp4"); // fallback
-        }
-      }, [src]);
-      return <video ref={ref} data-role={role} className={className} autoPlay={autoPlay} playsInline muted={muted} controls={controls} />;
-    }
-
-    const Sk = () => <div className="skeleton"></div>;
-    const Metric = ({label, value}) => <div className="metric"><div className="big">{value ?? <Sk/>}</div><div className="label">{label}</div></div>;
-    const Pair = ({k, v}) => <div className="pair"><div className="k">{k}</div><div className="v">{v ?? <Sk/>}</div></div>;
-
-    function CaptureBar({ scope, weather }) {
-      const [busy, setBusy] = useState(false);
-      const downloadBlob = (blob, filename)=>{ const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(url), 500); };
-      const capture = async ()=>{
-        const tel = document.querySelector('video[data-role="telescope"]');
-        if (!tel) return toast("No telescope video found");
-        setBusy(true);
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = tel.videoWidth || 1280; canvas.height = tel.videoHeight || 720;
-          const ctx = canvas.getContext('2d'); ctx.drawImage(tel, 0, 0, canvas.width, canvas.height);
-          const ts = new Date().toISOString().replace(/[:.]/g,'-');
-          const png = await new Promise(r => canvas.toBlob(r, 'image/png', 0.95));
-          downloadBlob(png, `telescope_${ts}.png`);
-          const meta = { capturedAt:new Date().toISOString(), target:scope?.target, ra:scope?.ra, dec:scope?.dec, exposure_s:scope?.exposure, filter:scope?.filter, binning:scope?.binning, gain:scope?.gain, fov:scope?.fov, roi:scope?.roi, weather:{ temperature_c:weather?.temperature, humidity_pct:weather?.humidity, pressure_hpa:weather?.pressure, wind_kmh:weather?.windSpeed } };
-          const blob = new Blob([JSON.stringify(meta, null, 2)], { type:"application/json" });
-          downloadBlob(blob, `telescope_${ts}.json`); toast("Saved PNG + JSON");
-        } catch { toast("Capture failed"); } finally { setBusy(false); }
-      };
-      return <div className="controls"><button className="btn primary" onClick={capture} disabled={busy}>{busy? "Capturing…" : "📸 Take Snapshot"}</button></div>;
-    }
-
-    function App(){
-      const [siteStream, setSiteStream] = useState("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8");
-      const [telescopeStream, setTelescopeStream] = useState("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8");
-
-      const [query, setQuery] = useState("M31");
-      const [objects, setObjects] = useState([]);
-      const [selected, setSelected] = useState(null);
-
-      const [visible, setVisible] = useState([]);
-      const [weather, setWeather] = useState(null);
-      const [scope, setScope] = useState(null);
-
-      const lat = -37.8136, lon = 144.9631;
-
-      useEffect(()=>{ api.catalog(query).then(setObjects).catch(()=>toast("Catalog load failed")); },[]);
-      useEffect(()=>{ const iso=new Date().toISOString(); api.visible(lat,lon,iso,15).then(setVisible).catch(()=>{}); },[]);
-      const reloadWeather = ()=> api.weather().then(d=>d.ok && setWeather(d.reading)).catch(()=>toast("Weather fetch failed"));
-      const reloadScope   = ()=> api.scope().then(setScope).catch(()=>toast("Scope fetch failed"));
-      useEffect(()=>{ reloadWeather(); reloadScope(); },[]);
-      useInterval(reloadWeather, 60_000);
-      useInterval(reloadScope, 5_000);
-      useEffect(()=>{ if (objects.length && !selected) setSelected(objects[0]); }, [objects]);
-
-      const choose = async o => { setSelected(o); await api.target(o.id).catch(()=>toast("Slew failed")); reloadScope(); };
-
-      return (
-        <div className="container">
-          <div className="header">
-            <div className="brand"><img className="brand-logo" src="./novascope-logo.png" alt="NovaScope logo" />NovaScope</div>
-            <div className="badge"><span className="dot"></span> Telescope Online</div>
-            <div className="badge">Connection: Stable</div>
-            <div className="badge">Location: Melbourne, Australia</div>
-          </div>
-
-          <div className="grid">
-            <div className="panel">
-              <h3> <img className="icon" src="./object-selection.png" alt="" />Object Selection</h3>
-              <input className="input" placeholder="Search (e.g., M31, Nebula, Cluster)" value={query} onChange={async e=>{setQuery(e.target.value); setObjects(await api.catalog(e.target.value));}}/>
-              <div style={{marginTop:8, color:"var(--muted)", fontSize:13}}>Visible now (alt ≥ 15°):</div>
-              {visible.slice(0,4).map(o=>(
-                <div key={"vis-"+o.id} className="object-card" onClick={()=>choose(o)}>
-                  <div style={{fontWeight:700}}>{o.name}</div>
-                  <div style={{fontSize:13, color:"var(--muted)"}}>Alt: {o.altitude}° | RA: {o.ra} | Dec: {o.dec} | {o.type}</div>
-                </div>
-              ))}
-              {objects.slice(0,5).map(o=>(
-                <div key={o.id} className="object-card" onClick={()=>choose(o)}>
-                  <div style={{fontWeight:700}}>{o.name}</div>
-                  <div style={{fontSize:13, color:"var(--muted)"}}>RA: {o.ra} | Dec: {o.dec} | Mag: {o.magnitude} | {o.type}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="panel">
-              <h3> <img className="icon" src="./weather-conditions.png" alt="" />Weather Conditions</h3>
-              <div className="metrics">
-                <Metric label="Temperature" value={fmt(weather?.temperature,"°C")} />
-                <Metric label="Humidity" value={fmt(weather?.humidity,"%")} />
-                <Metric label="Pressure" value={fmt(weather?.pressure," hPa")} />
-                <Metric label="Wind Speed" value={fmt(weather?.windSpeed," km/h")} />
-              </div>
-              <div className="forecast">
-                <div style={{marginBottom:6, color:"#cfe3ff"}}>6-Hour Forecast</div>
-                <div>22:00 — Clear, 16°C</div>
-                <div>01:00 — Clear, 14°C</div>
-                <div>04:00 — Partly Cloudy, 12°C</div>
-                <div style={{marginTop:8, fontSize:12}}>
-                  {weather?.readAt ? `Last updated: ${new Date(weather.readAt).toLocaleString()}` : ""}
-                </div>
-              </div>
-            </div>
-
-            <div className="panel">
-              <h3> <img className="icon" src="./observatory-view.png" alt="" />Observatory View</h3>
-              <HlsPlayer src={siteStream} role="site" />
-              <div className="controls">
-                <input className="input" placeholder="Site stream HLS URL (.m3u8)" value={siteStream} onChange={e=>setSiteStream(e.target.value)} />
-              </div>
-            </div>
-          </div>
-
-          <div className="status-grid">
-            <div className="panel">
-              <h3> <img className="icon" src="./telescope-status.png" alt="" />Telescope Status</h3>
-              <div className="kv">
-                <Pair k="Azimuth"  v={scope ? `${(scope.az?.toFixed?.(1) ?? scope.az) ?? "—"}°` : <Sk/>}/>
-                <Pair k="Elevation" v={scope ? `${(scope.el?.toFixed?.(1) ?? scope.el) ?? "—"}°` : <Sk/>}/>
-                <Pair k="RA"        v={scope?.ra}/>
-                <Pair k="Dec"       v={scope?.dec}/>
-                <Pair k="Exposure"  v={scope ? `${scope.exposure}s` : <Sk/>}/>
-                <Pair k="Filter"    v={scope?.filter}/>
-                <Pair k="Binning"   v={scope?.binning}/>
-                <Pair k="Gain"      v={scope?.gain}/>
-              </div>
-            </div>
-
-            <div className="panel">
-              <div style={{display:"flex", alignItems:"center", justifyContent:"space-between"}}>
-                <h3> <img className="icon" src="./live-telescope.png" alt="" />Live Telescope Feed</h3>
-                <div className="pill">
-                  <span className="dot" style={{background: scope?.trackingActive ? "var(--ok)" : "var(--warn)"}}></span>
-                  {scope?.trackingActive ? "Tracking Active" : "Tracking Paused"}
-                </div>
-              </div>
-
-              <div className="feed">
-                <HlsPlayer src={telescopeStream} className="camera" autoPlay={true} muted={false} controls={true} role="telescope" />
-              </div>
-
-              <div style={{marginTop:10, color:"var(--muted)", fontSize:14}}>
-                Target: {scope?.target || selected?.name || "—"} {scope?.fov ? ` | FOV: ${scope.fov}` : ""}
-              </div>
-
-              <div className="controls">
-                <select className="select" onChange={e=>api.config({exposure:Number(e.target.value)}).then(()=>api.scope().then(setScope))} defaultValue="30">
-                  {[10,15,20,30,45,60,90].map(v=><option key={v} value={v}>{v}s</option>)}
-                </select>
-                <select className="select" onChange={e=>api.config({filter:e.target.value}).then(()=>api.scope().then(setScope))} defaultValue="Luminance">
-                  {["Luminance","Red","Green","Blue","Hα","OIII","SII"].map(f=><option key={f} value={f}>{f}</option>)}
-                </select>
-                <select className="select" onChange={e=>api.config({binning:e.target.value}).then(()=>api.scope().then(setScope))} defaultValue="1x1">
-                  {["1x1","2x2","3x3"].map(b=><option key={b} value={b}>{b}</option>)}
-                </select>
-                <select className="select" onChange={e=>api.config({gain:Number(e.target.value)}).then(()=>api.scope().then(setScope))} defaultValue="100">
-                  {[50,100,150,200,300,400].map(g=><option key={g} value={g}>Gain {g}</option>)}
-                </select>
-                <select className="select" onChange={e=>api.config({tracking:e.target.value==="on"}).then(()=>api.scope().then(setScope))} defaultValue="on">
-                  <option value="on">Tracking On</option>
-                  <option value="off">Tracking Off</option>
-                </select>
-              </div>
-
-              <div className="controls">
-                <input className="input" placeholder="Telescope HLS URL (.m3u8)" value={telescopeStream} onChange={e=>setTelescopeStream(e.target.value)} />
-              </div>
-
-              <CaptureBar scope={scope} weather={weather} />
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-  </script>
-</body>
-</html>
-
-
-
