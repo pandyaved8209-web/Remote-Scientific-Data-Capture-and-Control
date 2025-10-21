@@ -97,46 +97,21 @@
         }
 
         /* ====================== HLS PLAYER ====================== */
-        function HlsPlayer({
-          src,
-          className = "camera",
-          autoPlay = true,
-          muted = true,
-          controls = true,
-          role,
-        }) {
-          const ref = useRef(null);
-
-          useEffect(() => {
-            const video = ref.current;
-            if (!video || !src) return;
-
-            if (video.canPlayType("application/vnd.apple.mpegURL")) {
-              // Safari
-              video.src = src;
-            } else if (window.Hls?.isSupported()) {
-              const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
-              hls.loadSource(src);
-              hls.attachMedia(video);
-              return () => hls.destroy();
-            } else {
-              // Fallback
-              video.src = src.replace(".m3u8", ".mp4");
-            }
-          }, [src]);
-
-          return (
-            <video
-              ref={ref}
-              data-role={role}
-              className={className}
-              autoPlay={autoPlay}
-              playsInline
-              muted={muted}
-              controls={controls}
-            />
-          );
-        }
+function HlsPlayer({ src, className = "camera", autoPlay = true, muted = true, controls = true, role }) {
+  return (
+    <video
+      src={src}
+      className={className}
+      data-role={role}
+      autoPlay={autoPlay}
+      muted={muted}
+      loop
+      playsInline
+      controls={controls}
+      style={{ width: "100%", background: "#000", maxHeight: "360px" }}
+    />
+  );
+}
 
         /* ====================== SMALL COMPONENTS ====================== */
         const Sk = () => <div className="skeleton"></div>;
@@ -241,10 +216,10 @@
 
           // Streams
           const [siteStream, setSiteStream] = useState(
-            "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+            "/telescope.mp4"
           );
           const [telescopeStream, setTelescopeStream] = useState(
-            "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+            "/telescope.mp4"
           );
 
           // Object search & selection
